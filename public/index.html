@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thangabali Suitcase Marketplace</title>
+  </head>
+  <body>
+    <h1>🧳 Thangabali Marketplace Frontend</h1>
+
+    <!-- REGISTER -->
+    <h2>1. Register</h2>
+    <input type="email" id="regEmail" placeholder="Email" />
+    <input type="password" id="regPassword" placeholder="Password" />
+    <select id="regRole">
+      <option value="buyer">Buyer</option>
+      <option value="seller">Seller</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button onclick="register()">Register</button>
+    <pre id="registerResult"></pre>
+
+    <!-- VERIFY OTP -->
+    <h2>2. Verify OTP</h2>
+    <input type="text" id="otp" placeholder="Enter OTP" />
+    <button onclick="verifyOTP()">Verify OTP</button>
+    <pre id="otpResult"></pre>
+
+    <!-- LOGIN -->
+    <h2>3. Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <pre id="loginResult"></pre>
+
+    <!-- CREATE PRODUCT (for seller) -->
+    <h2>4. Add Product (Seller)</h2>
+    <input type="text" id="productName" placeholder="Product Name" />
+    <input type="number" id="productPrice" placeholder="Price" />
+    <button onclick="addProduct()">Add Product</button>
+    <pre id="productResult"></pre>
+
+    <!-- PLACE ORDER (for buyer) -->
+    <h2>5. Place Order (Buyer)</h2>
+    <input type="text" id="orderProductId" placeholder="Product ID" />
+    <button onclick="placeOrder()">Place Order</button>
+    <pre id="orderResult"></pre>
+
+    <!-- VIEW USERS (admin only) -->
+    <h2>6. View All Users (Admin)</h2>
+    <button onclick="viewUsers()">View Users</button>
+    <pre id="usersResult"></pre>
+
+    <script>
+      const BASE_URL = "https://backend-part-8lkm.onrender.com/api";
+      let token = "";
+      let email = "";
+
+      async function register() {
+        const res = await fetch(`${BASE_URL}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("regEmail").value,
+            password: document.getElementById("regPassword").value,
+            role: document.getElementById("regRole").value,
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("registerResult").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+        email = document.getElementById("regEmail").value;
+      }
+
+      async function verifyOTP() {
+        const otp = document.getElementById("otp").value;
+        const res = await fetch(`${BASE_URL}/auth/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, otp }),
+        });
+        const data = await res.json();
+        document.getElementById("otpResult").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+
+      async function login() {
+        const res = await fetch(`${BASE_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("loginEmail").value,
+            password: document.getElementById("loginPassword").value,
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("loginResult").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+        token = data.token;
+      }
+
+      async function addProduct() {
+        const res = await fetch(`${BASE_URL}/seller/products`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: document.getElementById("productName").value,
+            price: parseInt(document.getElementById("productPrice").value),
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("productResult").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+
+      async function placeOrder() {
+        const res = await fetch(`${BASE_URL}/buyer/orders`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId: document.getElementById("orderProductId").value,
+          }),
+        });
+        const data = await res.json();
+        document.getElementById("orderResult").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+
+      async function viewUsers() {
+        const res = await fetch(`${BASE_URL}/admin/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        document.getElementById("usersResult").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+    </script>
+  </body>
+</html>
